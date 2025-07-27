@@ -2,7 +2,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:apis/widgets/mybottomnavigationbaritem.dart';
+import 'package:apis/presentation/widgets/mybottomnavigationbaritem.dart';
+
 
 class MyBottomNavigationBar extends StatelessWidget {
   const MyBottomNavigationBar({Key? key}) : super(key: key);

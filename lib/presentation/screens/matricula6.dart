@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:apis/presentation/screens/matricul7.dart';
 
-import 'matricula6.dart' show MatricularEstudianteForm6;
-
-class MatricularEstudianteForm extends StatefulWidget {
-  const MatricularEstudianteForm({Key? key}) : super(key: key);
+class MatricularEstudianteForm6 extends StatefulWidget {
+  const MatricularEstudianteForm6({Key? key}) : super(key: key);
 
   @override
-  _MatricularEstudianteFormState createState() => _MatricularEstudianteFormState();  // CORRECTO
+  _MatricularEstudianteForm6State createState() => _MatricularEstudianteForm6State();
 }
 
-class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
+class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
   final _formKey = GlobalKey<FormState>();
   String _ocupacion = 'Estudiante';
   String _nivelEducacion = 'Superior';
@@ -17,12 +16,7 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
   final TextEditingController _lugarController = TextEditingController();
 
   final List<String> _ocupaciones = ['Estudiante', 'Trabajador', 'Otro'];
-  final List<String> _nivelesEducacion = [
-    'Primaria',
-    'Secundaria',
-    'Superior',
-    'Posgrado',
-  ];
+  final List<String> _nivelesEducacion = ['Primaria', 'Secundaria', 'Superior', 'Posgrado'];
 
   @override
   void initState() {
@@ -40,26 +34,30 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Container(
-            width: 360,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                _buildHeader(),
-                const SizedBox(height: 30),
-                _buildProgressIndicator(),
-                const SizedBox(height: 30),
-                _buildProfileSection(),
-                const SizedBox(height: 30),
-                _buildFormSection(),
-                const SizedBox(height: 30),
-                _buildActionButtons(),
-                const SizedBox(height: 30),
-              ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildHeader(),
+                    const SizedBox(height: 30),
+                    _buildProgressIndicator(),
+                    const SizedBox(height: 30),
+                    _buildProfileSection(),
+                    const SizedBox(height: 30),
+                    _buildFormSection(),
+                    const SizedBox(height: 30),
+                    _buildActionButtons(),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -70,19 +68,19 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
   Widget _buildHeader() {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            border: Border.all(color: const Color(0xFFD9D9D9)),
-            borderRadius: BorderRadius.circular(8),
+        IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              border: Border.all(color: const Color(0xFFD9D9D9)),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.arrow_back, size: 20),
           ),
-          child: const Icon(Icons.arrow_back, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
         const Spacer(),
-        Image.network("https://placehold.co/42x35", width: 42, height: 35),
-        const SizedBox(width: 5),
-        Image.network("https://placehold.co/201x35", width: 200, height: 35),
       ],
     );
   }
@@ -91,15 +89,13 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
     return SizedBox(
       width: 294,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildProgressStep(1, true),
           _buildProgressConnector(true),
           _buildProgressStep(2, true),
           _buildProgressConnector(false),
           _buildProgressStep(3, false),
-          _buildProgressConnector(false),
-          _buildProgressStep(4, false),
         ],
       ),
     );
@@ -124,9 +120,7 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
             width: 11,
             height: 11,
             decoration: BoxDecoration(
-              color: isActive
-                  ? const Color(0xFFE51F52)
-                  : const Color(0xFF666666),
+              color: isActive ? const Color(0xFFE51F52) : const Color(0xFF666666),
               shape: BoxShape.circle,
             ),
           ),
@@ -136,35 +130,20 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
   }
 
   Widget _buildProgressConnector(bool isActive) {
-    return Expanded(
-      child: Container(
-        height: 1,
-        color: isActive ? const Color(0xFFE51F52) : const Color(0xFF666666),
-      ),
+    return Container(
+      width: 14,
+      height: 1,
+      color: isActive ? const Color(0xFFE51F52) : const Color(0xFF666666),
     );
   }
 
   Widget _buildProfileSection() {
     return Column(
       children: [
-        Container(
-          width: 66,
-          height: 66,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE51F52),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.person, color: Colors.white, size: 30),
-            ),
-          ),
+        CircleAvatar(
+          radius: 33,
+          backgroundColor: const Color(0xFFE51F52),
+          child: const Icon(Icons.person, size: 35, color: Colors.white),
         ),
         const SizedBox(height: 10),
         Container(
@@ -248,7 +227,10 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Color(0xFF213354), fontSize: 14),
+          style: const TextStyle(
+            color: Color(0xFF213354),
+            fontSize: 14,
+          ),
         ),
         const SizedBox(height: 8),
         Container(
@@ -263,9 +245,15 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
             isExpanded: true,
             underline: const SizedBox(),
             icon: const Icon(Icons.arrow_drop_down),
-            style: TextStyle(color: const Color(0xFFB3B3B3), fontSize: 13),
+            style: const TextStyle(
+              color: Color(0xFF213354),
+              fontSize: 13,
+            ),
             items: items.map((String item) {
-              return DropdownMenuItem<String>(value: item, child: Text(item));
+              return DropdownMenuItem<String>(
+                value: item,
+                child: Text(item),
+              );
             }).toList(),
             onChanged: onChanged,
           ),
@@ -284,24 +272,33 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Color(0xFF213354), fontSize: 14),
+          style: const TextStyle(
+            color: Color(0xFF213354),
+            fontSize: 14,
+          ),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFFD9D9D9)),
             ),
             hintText: 'Loja',
-            hintStyle: TextStyle(color: const Color(0xFFA2A1A1), fontSize: 13),
+            hintStyle: const TextStyle(
+              color: Color(0xFFA2A1A1),
+              fontSize: 13,
+            ),
           ),
           onChanged: onChanged,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Este campo es requerido';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -314,13 +311,12 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
         children: [
           Expanded(
             child: OutlinedButton(
-              // Cambiar la navegación del botón Siguiente
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const MatricularEstudianteForm6(),
+                      builder: (context) => MatricularmeEstudiante7(),
                     ),
                   );
                 }
@@ -334,7 +330,10 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
               ),
               child: const Text(
                 'Siguiente',
-                style: TextStyle(color: Color(0xFF213354), fontSize: 16),
+                style: TextStyle(
+                  color: Color(0xFF213354),
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
@@ -342,7 +341,6 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                // Acción para el botón Cancelar
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
@@ -354,7 +352,10 @@ class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
               ),
               child: const Text(
                 'Cancelar',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),

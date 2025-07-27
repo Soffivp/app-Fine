@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:apis/presentation/screens/login.dart';
+import 'package:apis/presentation/screens/matricul1.dart';
+import 'package:apis/presentation/screens/home.dart';
 
-import 'package:apis/pages/login.dart';
-
-import 'package:apis/pages/matricul.dart';
-import 'package:apis/pages/home.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -219,7 +218,7 @@ class IngresarDatos extends StatelessWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => MatricularEstudianteForm()),
+                            MaterialPageRoute(builder: (context) => const MatricularEstudianteForm1()),
                           );
                         },
                       ),

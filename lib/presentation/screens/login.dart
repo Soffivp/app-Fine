@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'matricul.dart'; // Asegúrate de que este archivo exista y contenga la clase MatricularEstudianteForm
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'matricul.dart';
+import 'package:apis/presentation/screens/matricul1.dart';
+import 'package:apis/presentation/screens/home_F.dart';
 
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
-// Elimina esta línea, es incorrecta:
-// @override
-// MatricularEstudianteForm createState() => _MatricularEstudianteFormState();
 }
 
 class _LoginState extends State<Login> {
@@ -23,34 +23,57 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
-  void _iniciarSesion() {
+  Future<void> _iniciarSesion() async {
     if (_formKey.currentState!.validate()) {
-      final usuario = _usuarioController.text;
-      final contrasena = _contrasenaController.text;
+      final usuarioIngresado = _usuarioController.text.trim();
+      final contrasenaIngresada = _contrasenaController.text.trim();
 
-      if (usuario == 'user' && contrasena == '123') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Inicio de sesión exitoso')),
-        );
+      try {
+        final estudiantesSnapshot = await FirebaseFirestore.instance.collection('estudiantes').get();
+        bool credencialValida = false;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => IngresarDatos()),
-        );
-      } else {
+        for (var estudiante in estudiantesSnapshot.docs) {
+          final credencialesSnapshot = await estudiante.reference.collection('credenciales').get();
+
+          for (var credencial in credencialesSnapshot.docs) {
+            final data = credencial.data();
+            if (data['usuario'] == usuarioIngresado && data['contrasena'] == contrasenaIngresada) {
+              credencialValida = true;
+              break;
+            }
+          }
+
+          if (credencialValida) break;
+        }
+
+        if (credencialValida) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Inicio de sesión exitoso')),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Usuario o contraseña incorrectos')),
+          );
+        }
+      } catch (e) {
+        print('Error al verificar credenciales: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Usuario o contraseña incorrectos')),
+          const SnackBar(content: Text('Error al conectar con la base de datos')),
         );
       }
     }
   }
 
-  // Método para abrir el formulario de matrícula
   void _abrirFormularioMatricula() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MatricularEstudianteForm(), // Usa la clase Widget, no el State
+        builder: (context) => const MatricularEstudianteForm1(),
       ),
     );
   }
@@ -67,7 +90,6 @@ class _LoginState extends State<Login> {
             key: _formKey,
             child: Stack(
               children: [
-                // Logo
                 Positioned(
                   left: 113,
                   top: 145,
@@ -82,8 +104,6 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
-
-                // Título
                 Positioned(
                   left: 35,
                   top: 261,
@@ -98,8 +118,6 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
-
-                // Campo de Usuario
                 Positioned(
                   left: 40,
                   top: 330,
@@ -132,8 +150,7 @@ class _LoginState extends State<Login> {
                                 color: Color(0xFFD9D9D9),
                               ),
                             ),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -146,8 +163,6 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
-
-                // Campo de Contraseña
                 Positioned(
                   left: 40,
                   top: 409,
@@ -172,9 +187,7 @@ class _LoginState extends State<Login> {
                             hintText: 'Ingrese su contraseña',
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _mostrarContrasena
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
+                                _mostrarContrasena ? Icons.visibility : Icons.visibility_off,
                                 size: 18,
                               ),
                               onPressed: () {
@@ -190,8 +203,7 @@ class _LoginState extends State<Login> {
                                 color: Color(0xFFD9D9D9),
                               ),
                             ),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -204,8 +216,6 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
-
-                // Checkbox Recordarme
                 Positioned(
                   left: 44,
                   top: 488,
@@ -231,15 +241,11 @@ class _LoginState extends State<Login> {
                     ],
                   ),
                 ),
-
-                // Olvidé mi contraseña
                 Positioned(
                   left: 179,
                   top: 492,
                   child: TextButton(
-                    onPressed: () {
-                      // Acción para recuperar contraseña
-                    },
+                    onPressed: () {},
                     child: Text(
                       'Olvidé mi contraseña »',
                       style: TextStyle(
@@ -250,8 +256,6 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
-
-                // Botones
                 Positioned(
                   left: 60,
                   top: 547,
@@ -259,7 +263,6 @@ class _LoginState extends State<Login> {
                     width: 240,
                     child: Row(
                       children: [
-                        // Botón Matricular
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -269,7 +272,7 @@ class _LoginState extends State<Login> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            onPressed: _abrirFormularioMatricula, // Usa el método corregido
+                            onPressed: _abrirFormularioMatricula,
                             child: Text(
                               'Matricular',
                               style: TextStyle(
@@ -281,8 +284,6 @@ class _LoginState extends State<Login> {
                           ),
                         ),
                         SizedBox(width: 16),
-
-                        // Botón Ingresar
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -311,20 +312,6 @@ class _LoginState extends State<Login> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class IngresarDatos extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Ingresar Datos'),
-      ),
-      body: Center(
-        child: Text('Pantalla de Ingreso de Datos'),
       ),
     );
   }

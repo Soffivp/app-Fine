@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:apis/widgets/mybottomnavigationbar.dart';
+import 'package:apis/presentation/widgets/mybottomnavigationbar.dart';
 import '../widgets/IngresarDatos.dart';
+import 'package:apis/presentation/screens/matricul1.dart';
 
 class Home extends StatelessWidget {
 

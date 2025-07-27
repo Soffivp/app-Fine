@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'matricul7.dart'; // Importación del siguiente formulario
 
-class MatricularEstudianteForm6 extends StatefulWidget {
-  const MatricularEstudianteForm6({Key? key}) : super(key: key);
+import 'matricula6.dart' show MatricularEstudianteForm6;
+
+class MatricularEstudianteForm extends StatefulWidget {
+  const MatricularEstudianteForm({Key? key}) : super(key: key);
 
   @override
-  _MatricularEstudianteForm6State createState() => _MatricularEstudianteForm6State();
+  _MatricularEstudianteFormState createState() => _MatricularEstudianteFormState();  // CORRECTO
+
 }
 
-class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
+class _MatricularEstudianteFormState extends State<MatricularEstudianteForm> {
   final _formKey = GlobalKey<FormState>();
   String _ocupacion = 'Estudiante';
   String _nivelEducacion = 'Superior';
@@ -16,7 +18,12 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
   final TextEditingController _lugarController = TextEditingController();
 
   final List<String> _ocupaciones = ['Estudiante', 'Trabajador', 'Otro'];
-  final List<String> _nivelesEducacion = ['Primaria', 'Secundaria', 'Superior', 'Posgrado'];
+  final List<String> _nivelesEducacion = [
+    'Primaria',
+    'Secundaria',
+    'Superior',
+    'Posgrado',
+  ];
 
   @override
   void initState() {
@@ -64,17 +71,14 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
   Widget _buildHeader() {
     return Row(
       children: [
-        IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              border: Border.all(color: const Color(0xFFD9D9D9)),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.arrow_back, size: 20),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F5),
+            border: Border.all(color: const Color(0xFFD9D9D9)),
+            borderRadius: BorderRadius.circular(8),
           ),
-          onPressed: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back, size: 20),
         ),
         const Spacer(),
         Image.network("https://placehold.co/42x35", width: 42, height: 35),
@@ -88,13 +92,15 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
     return SizedBox(
       width: 294,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildProgressStep(1, true),
           _buildProgressConnector(true),
           _buildProgressStep(2, true),
           _buildProgressConnector(false),
           _buildProgressStep(3, false),
+          _buildProgressConnector(false),
+          _buildProgressStep(4, false),
         ],
       ),
     );
@@ -119,7 +125,9 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
             width: 11,
             height: 11,
             decoration: BoxDecoration(
-              color: isActive ? const Color(0xFFE51F52) : const Color(0xFF666666),
+              color: isActive
+                  ? const Color(0xFFE51F52)
+                  : const Color(0xFF666666),
               shape: BoxShape.circle,
             ),
           ),
@@ -129,10 +137,11 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
   }
 
   Widget _buildProgressConnector(bool isActive) {
-    return Container(
-      width: 14,
-      height: 1,
-      color: isActive ? const Color(0xFFE51F52) : const Color(0xFF666666),
+    return Expanded(
+      child: Container(
+        height: 1,
+        color: isActive ? const Color(0xFFE51F52) : const Color(0xFF666666),
+      ),
     );
   }
 
@@ -240,10 +249,7 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF213354),
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: Color(0xFF213354), fontSize: 14),
         ),
         const SizedBox(height: 8),
         Container(
@@ -258,15 +264,9 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
             isExpanded: true,
             underline: const SizedBox(),
             icon: const Icon(Icons.arrow_drop_down),
-            style: TextStyle(
-              color: const Color(0xFFB3B3B3),
-              fontSize: 13,
-            ),
+            style: TextStyle(color: const Color(0xFFB3B3B3), fontSize: 13),
             items: items.map((String item) {
-              return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              );
+              return DropdownMenuItem<String>(value: item, child: Text(item));
             }).toList(),
             onChanged: onChanged,
           ),
@@ -285,33 +285,24 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF213354),
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: Color(0xFF213354), fontSize: 14),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFFD9D9D9)),
             ),
             hintText: 'Loja',
-            hintStyle: TextStyle(
-              color: const Color(0xFFA2A1A1),
-              fontSize: 13,
-            ),
+            hintStyle: TextStyle(color: const Color(0xFFA2A1A1), fontSize: 13),
           ),
           onChanged: onChanged,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Este campo es requerido';
-            }
-            return null;
-          },
         ),
       ],
     );
@@ -324,12 +315,13 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
         children: [
           Expanded(
             child: OutlinedButton(
+              // Cambiar la navegación del botón Siguiente
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MatricularmeEstudiante7(),
+                      builder: (context) => const MatricularEstudianteForm6(),
                     ),
                   );
                 }
@@ -343,10 +335,7 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
               ),
               child: const Text(
                 'Siguiente',
-                style: TextStyle(
-                  color: Color(0xFF213354),
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Color(0xFF213354), fontSize: 16),
               ),
             ),
           ),
@@ -354,6 +343,7 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
+                // Acción para el botón Cancelar
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
@@ -365,10 +355,7 @@ class _MatricularEstudianteForm6State extends State<MatricularEstudianteForm6> {
               ),
               child: const Text(
                 'Cancelar',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
           ),
