@@ -6,31 +6,47 @@ class BotonFormulario extends StatelessWidget {
   final Color textoColor;
   final Color bordeColor;
   final VoidCallback onPressed;
+  final bool habilitado;
 
   const BotonFormulario({
+    super.key,
     required this.texto,
     required this.color,
     required this.textoColor,
     required this.bordeColor,
     required this.onPressed,
+    required this.habilitado,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: textoColor,
-        padding: EdgeInsets.all(12),
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: bordeColor, width: 1),
-          borderRadius: BorderRadius.circular(8),
-        ),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minWidth: 100,
+        maxWidth: 160, // para que no sea gigante
+        minHeight: 40,
+        maxHeight: 48,
       ),
-      onPressed: onPressed,
-      child: Text(
-        texto,
-        style: TextStyle(fontSize: 16),
+      child: ElevatedButton(
+        onPressed: habilitado ? onPressed : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: habilitado ? color : Colors.grey.shade400,
+          foregroundColor: textoColor,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: bordeColor, width: 1.5),
+          ),
+        ),
+        child: Text(
+          texto,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

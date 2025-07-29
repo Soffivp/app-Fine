@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:apis/presentation/screens/contacto_representante.dart';
+import 'package:provider/provider.dart';
+
+import 'package:apis/presentation/widgets/encabezado_formulario.dart';
+import 'package:apis/presentation/widgets/barra_progreso.dart';
+import 'package:apis/presentation/widgets/boton_formulario.dart';
+import 'package:apis/presentation/widgets/boton_atras.dart';
+import 'package:apis/presentation/widgets/campo_estandar.dart';
+import 'package:apis/config/helpers/alerta_emergente.dart';
+import 'package:apis/presentation/providers/registro_provider.dart';
 
 class InfoRepresentanteScreen extends StatefulWidget {
-  const InfoRepresentanteScreen({Key? key}) : super(key: key);
+  const InfoRepresentanteScreen({super.key});
 
   @override
   State<InfoRepresentanteScreen> createState() => _InfoRepresentanteScreenState();
@@ -10,299 +18,261 @@ class InfoRepresentanteScreen extends StatefulWidget {
 
 class _InfoRepresentanteScreenState extends State<InfoRepresentanteScreen> {
   final _formKey = GlobalKey<FormState>();
-  bool _facturaNombreEstudiante = false;
+  final _tipoIdentificacion = ['Cédula', 'Pasaporte'];
+  final _estadoCivil = ['Soltero', 'Casado', 'Divorciado'];
+  final _generos = ['Masculino', 'Femenino', 'Otro'];
+  final _origenesIngreso = ['Empleo', 'Negocio', 'Pensión', 'Otro'];
+  final _parroquias = ['El Valle', 'Sucre', 'Centro', 'Vilcabamba'];
 
-  final TextEditingController _idNumberController = TextEditingController();
-  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController identificacionController = TextEditingController();
+  final TextEditingController nombreCompletoController = TextEditingController();
 
-  String? _selectedTipoID;
-  String? _selectedOrigen;
-  String? _selectedParroquia;
-  String? _selectedEstadoCivil;
-  String? _selectedGenero;
+  String? tipoSeleccionado;
+  String? generoSeleccionado;
+  String? estadoCivilSeleccionado;
+  String? origenSeleccionado;
+  String? parroquiaSeleccionada;
 
-  final List<String> _tiposID = ['Cédula', 'Pasaporte'];
-  final List<String> _origenes = ['Salario', 'Negocio', 'Otro'];
-  final List<String> _parroquias = ['Parroquia A', 'Parroquia B'];
-  final List<String> _estadosCiviles = ['Soltero/a', 'Casado/a'];
-  final List<String> _generos = ['Masculino', 'Femenino', 'Otro'];
+  bool emitirFactura = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final registroProvider = Provider.of<RegistroProvider>(context, listen: false);
+    if (registroProvider.datosEstudiante['esRepresentante'] == true) {
+      emitirFactura = true;
+      final estudiante = registroProvider.datosEstudiante;
+      tipoSeleccionado = estudiante['tipoIdentificacion'];
+      identificacionController.text = estudiante['numIdentificacion'] ?? '';
+      nombreCompletoController.text = '${estudiante['nombre']} ${estudiante['apellido']}';
+      generoSeleccionado = estudiante['genero'];
+    }
+  }
 
   @override
   void dispose() {
-    _idNumberController.dispose();
-    _fullNameController.dispose();
+    identificacionController.dispose();
+    nombreCompletoController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final registroProvider = Provider.of<RegistroProvider>(context, listen: false);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Form(
-            key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _buildHeader(),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: BotonAtras(),
+                ),
+                const SizedBox(height: 12),
+
+                Image.asset(
+                  'assets/images/imagen_margen.jpg',
+                  height: 60,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 8),
+
+                const ProgresoRegistro(pasoActual: 4),
                 const SizedBox(height: 20),
-                _buildProgress(),
+
+                const Icon(Icons.account_circle, size: 80, color: Color(0xFFDE0059)),
+                const SizedBox(height: 6),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C2D5D),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text('Representante', style: TextStyle(color: Colors.white, fontSize: 14)),
+                ),
                 const SizedBox(height: 20),
-                _buildProfileLabel(),
-                const SizedBox(height: 20),
-                _buildCheckbox(),
+
+                const EncabezadoFormulario(titulo: 'Datos del Representante', mostrarLogo: false),
                 const SizedBox(height: 16),
-                _buildDropdown(
-                  label: 'Tipo de Identificación',
-                  value: _selectedTipoID,
-                  items: _tiposID,
-                  onChanged: (value) => setState(() => _selectedTipoID = value),
-                  showAlert: true,
+
+                // Checkbox a la izquierda
+                Row(
+                  children: [
+                    Checkbox(
+                      value: emitirFactura,
+                      onChanged: (value) {
+                        setState(() {
+                          emitirFactura = value ?? false;
+                          if (emitirFactura) {
+                            final estudiante = registroProvider.datosEstudiante;
+                            tipoSeleccionado = estudiante['tipoIdentificacion'];
+                            identificacionController.text = estudiante['numIdentificacion'] ?? '';
+                            nombreCompletoController.text = '${estudiante['nombre']} ${estudiante['apellido']}';
+                            generoSeleccionado = estudiante['genero'];
+                          } else {
+                            tipoSeleccionado = null;
+                            identificacionController.clear();
+                            nombreCompletoController.clear();
+                            generoSeleccionado = null;
+                          }
+                        });
+                      },
+                      activeColor: const Color(0xFF213354),
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Emitir factura a nombre del estudiante',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
                 ),
-                _buildTextField('Número de identificación', _idNumberController),
-                _buildTextField('Razón Social/Nombre Completo', _fullNameController),
-                _buildDropdown(
-                  label: 'Origen de ingresos',
-                  value: _selectedOrigen,
-                  items: _origenes,
-                  onChanged: (value) => setState(() => _selectedOrigen = value),
-                  showAlert: true,
+                const SizedBox(height: 16),
+
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      CampoEstandar(
+                        label: 'Tipo de Identificación',
+                        hintText: 'Seleccione un tipo',
+                        items: _tipoIdentificacion,
+                        value: tipoSeleccionado,
+                        onChanged: (val) => setState(() => tipoSeleccionado = val),
+                      ),
+                      CampoEstandar(
+                        label: 'Número de Identificación',
+                        hintText: 'Ingrese el número',
+                        controller: identificacionController,
+                        keyboardType: TextInputType.number,
+                      ),
+                      CampoEstandar(
+                        label: 'Razón Social / Nombre Completo',
+                        hintText: 'Ingrese nombre completo',
+                        controller: nombreCompletoController,
+                      ),
+                      CampoEstandar(
+                        label: 'Origen de Ingresos',
+                        hintText: 'Seleccione un origen',
+                        items: _origenesIngreso,
+                        value: origenSeleccionado,
+                        onChanged: (val) => setState(() => origenSeleccionado = val),
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            AlertaEmergente.mostrar(
+                              context,
+                              icono: Icons.info,
+                              mensaje: 'Incluya el origen principal de los ingresos del representante.',
+                            );
+                          },
+                          child: const Icon(Icons.info, color: Color(0xFFE51F52)),
+                        ),
+                      ),
+                      CampoEstandar(
+                        label: 'Parroquia',
+                        hintText: 'Seleccione parroquia',
+                        items: _parroquias,
+                        value: parroquiaSeleccionada,
+                        onChanged: (val) => setState(() => parroquiaSeleccionada = val),
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            AlertaEmergente.mostrar(
+                              context,
+                              icono: Icons.info,
+                              mensaje: 'Indique la parroquia de residencia del representante.',
+                            );
+                          },
+                          child: const Icon(Icons.info, color: Color(0xFFE51F52)),
+                        ),
+                      ),
+                      CampoEstandar(
+                        label: 'Estado Civil',
+                        hintText: 'Seleccione una opción',
+                        items: _estadoCivil,
+                        value: estadoCivilSeleccionado,
+                        onChanged: (val) => setState(() => estadoCivilSeleccionado = val),
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            AlertaEmergente.mostrar(
+                              context,
+                              icono: Icons.info,
+                              mensaje: 'Este dato es requerido por fines administrativos.',
+                            );
+                          },
+                          child: const Icon(Icons.info, color: Color(0xFFE51F52)),
+                        ),
+                      ),
+                      CampoEstandar(
+                        label: 'Género',
+                        hintText: 'Seleccione género',
+                        items: _generos,
+                        value: generoSeleccionado,
+                        onChanged: (val) => setState(() => generoSeleccionado = val),
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            AlertaEmergente.mostrar(
+                              context,
+                              icono: Icons.info,
+                              mensaje: 'Seleccionar el género ayuda a estadísticas del sistema.',
+                            );
+                          },
+                          child: const Icon(Icons.info, color: Color(0xFFE51F52)),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          BotonFormulario(
+                            texto: 'Siguiente',
+                            color: Colors.white,
+                            textoColor: Colors.black,
+                            bordeColor: Colors.black,
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                registroProvider.actualizarDatosRepresentante({
+                                  'emitirFacturaAlEstudiante': emitirFactura,
+                                  'tipoIdentificacion': tipoSeleccionado,
+                                  'numeroIdentificacion': identificacionController.text,
+                                  'razonSocial/NombreCompleto': nombreCompletoController.text,
+                                  'origenIngresos': origenSeleccionado,
+                                  'parroquia': parroquiaSeleccionada,
+                                  'estadoCivil': estadoCivilSeleccionado,
+                                  'genero': generoSeleccionado,
+                                });
+                                Navigator.pushNamed(context, '/contacto_representante');
+                              }
+                            },
+                            habilitado: true,
+                          ),
+                          const SizedBox(width: 12),
+                          BotonFormulario(
+                            texto: 'Cancelar',
+                            color: const Color(0xFFE51F52),
+                            textoColor: Colors.white,
+                            bordeColor: const Color(0xFFE51F52),
+                            onPressed: () => Navigator.pop(context),
+                            habilitado: true,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
-                _buildDropdown(
-                  label: 'Parroquia',
-                  value: _selectedParroquia,
-                  items: _parroquias,
-                  onChanged: (value) => setState(() => _selectedParroquia = value),
-                  showAlert: true,
-                ),
-                _buildDropdown(
-                  label: 'Estado civil',
-                  value: _selectedEstadoCivil,
-                  items: _estadosCiviles,
-                  onChanged: (value) => setState(() => _selectedEstadoCivil = value),
-                  showAlert: true,
-                ),
-                _buildDropdown(
-                  label: 'Género',
-                  value: _selectedGenero,
-                  items: _generos,
-                  onChanged: (value) => setState(() => _selectedGenero = value),
-                  showAlert: true,
-                ),
-                const SizedBox(height: 24),
-                _buildActionButtons(),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back),
-        ),
-        const Spacer(),
-      ],
-    );
-  }
-
-  Widget _buildProgress() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(5, (index) {
-        bool isFilled = index < 2;
-        return Row(
-          children: [
-            Container(
-              width: 15,
-              height: 15,
-              decoration: BoxDecoration(
-                color: isFilled ? const Color(0xFFE51F52) : const Color(0xFFCCCCCC),
-                shape: BoxShape.circle,
-              ),
-            ),
-            if (index < 4)
-              Container(
-                width: 14,
-                height: 1,
-                color: const Color(0xFFE51F52),
-              ),
-          ],
-        );
-      }),
-    );
-  }
-
-  Widget _buildProfileLabel() {
-    return Column(
-      children: const [
-        CircleAvatar(
-          radius: 33,
-          backgroundColor: Color(0xFFE51F52),
-          child: Icon(Icons.person, size: 35, color: Colors.white),
-        ),
-        SizedBox(height: 10),
-        Text(
-          'Representante',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            backgroundColor: Color(0xFF213354),
-          ),
-        ),
-        SizedBox(height: 10),
-        Text(
-          'Información del representante',
-          style: TextStyle(
-            color: Color(0xFF3C578A),
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCheckbox() {
-    return Row(
-      children: [
-        Checkbox(
-          value: _facturaNombreEstudiante,
-          onChanged: (value) {
-            setState(() {
-              _facturaNombreEstudiante = value ?? false;
-            });
-          },
-        ),
-        const Text('Emitir facturas a nombre del estudiante'),
-      ],
-    );
-  }
-
-  Widget _buildTextField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label),
-          const SizedBox(height: 4),
-          TextFormField(
-            controller: controller,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Campo obligatorio';
-              }
-              return null;
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdown({
-    required String label,
-    required String? value,
-    required List<String> items,
-    required Function(String?) onChanged,
-    bool showAlert = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(label),
-              if (showAlert)
-                const Padding(
-                  padding: EdgeInsets.only(left: 4),
-                  child: Icon(Icons.error_outline, size: 18, color: Colors.red),
-                )
-            ],
-          ),
-          const SizedBox(height: 4),
-          DropdownButtonFormField<String>(
-            value: value,
-            items: items.map((String item) {
-              return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              );
-            }).toList(),
-            onChanged: onChanged,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            validator: (value) => value == null ? 'Seleccione una opción' : null,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ContactoRepresentScreen(),
-                  ),
-                );
-              }
-            },
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.all(12),
-              side: const BorderSide(color: Color(0xFF213354)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              'Siguiente',
-              style: TextStyle(color: Color(0xFF213354)),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE51F52),
-              padding: const EdgeInsets.all(12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
