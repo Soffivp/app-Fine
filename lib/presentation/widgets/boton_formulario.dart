@@ -15,7 +15,7 @@ class BotonFormulario extends StatelessWidget {
     required this.textoColor,
     required this.bordeColor,
     required this.onPressed,
-    required this.habilitado,
+    this.habilitado = true, // ✅ Valor por defecto agregado
   });
 
   @override
@@ -23,7 +23,7 @@ class BotonFormulario extends StatelessWidget {
     return ConstrainedBox(
       constraints: const BoxConstraints(
         minWidth: 100,
-        maxWidth: 160, // para que no sea gigante
+        maxWidth: 160,
         minHeight: 40,
         maxHeight: 48,
       ),

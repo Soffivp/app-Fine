@@ -11,13 +11,13 @@ class MenuInferior extends StatelessWidget {
         Navigator.pushNamed(context, '/home');
         break;
       case 1:
-        Navigator.pushNamed(context, '/matriculas');
+        Navigator.pushNamed(context, '/misClases');
         break;
       case 2:
-        Navigator.pushNamed(context, '/cuotas');
+        Navigator.pushNamed(context, '/matricularse');
         break;
       case 3:
-        Navigator.pushNamed(context, '/notas');
+        Navigator.pushNamed(context, '/cuotas');
         break;
       case 4:
         Navigator.pushNamed(context, '/perfil');

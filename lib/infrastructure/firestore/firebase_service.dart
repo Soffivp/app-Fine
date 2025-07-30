@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:apis/domain/entities/estudiante.dart';
 import 'package:apis/domain/entities/representante.dart';
 import 'package:apis/domain/entities/credenciales.dart';
+import 'package:apis/domain/entities/pago.dart'; // 👈 Importa el modelo de pago
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -77,6 +78,17 @@ class FirebaseService {
       print("✅ Datos guardados correctamente para UID existente.");
     } catch (e) {
       print("❌ Error al guardar con UID existente: $e");
+      rethrow;
+    }
+  }
+
+  /// ✅ Nuevo método: guardar un pago en la colección 'pagos'
+  Future<void> guardarPago(Pago pago) async {
+    try {
+      await _firestore.collection('pagos').add(pago.toJson());
+      print("✅ Pago registrado correctamente en Firestore.");
+    } catch (e) {
+      print("❌ Error al guardar el pago: $e");
       rethrow;
     }
   }
