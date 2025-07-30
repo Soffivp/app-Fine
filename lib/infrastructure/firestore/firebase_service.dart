@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:apis/domain/entities/estudiante.dart';
 import 'package:apis/domain/entities/representante.dart';
@@ -6,38 +7,77 @@ import 'package:apis/domain/entities/credenciales.dart';
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  /// ✅ Método original (crea el usuario en Auth y guarda todo)
   Future<void> guardarEstudianteConTodo({
     required Estudiante estudiante,
     required Representante representante,
     required Credenciales credenciales,
   }) async {
     try {
-      // 1. Crear documento del estudiante y obtener la referencia
-      final estudianteRef = _firestore.collection('estudiantes').doc();
+      final emailFormateado = "${credenciales.usuario}@fineapp.com";
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailFormateado,
+        password: credenciales.contrasena,
+      );
 
-      // 2. Crear una copia del estudiante con el ID incluido
-      final estudianteConId = estudiante.copyWith(id: estudianteRef.id);
+      final uid = credential.user?.uid;
+      if (uid == null) throw Exception('No se pudo obtener el UID del nuevo usuario');
 
-      // 3. Guardar estudiante con su ID
-      await estudianteRef.set(estudianteConId.toJson());
+      final estudianteRef = _firestore.collection('estudiantes').doc(uid);
+      final estudianteConId = estudiante.copyWith(id: uid);
 
-      // 4. Agregar representante en subcolección
-      await estudianteRef
-          .collection('representante')
-          .doc()
-          .set(representante.toJson());
+      await estudianteRef.set({
+        ...estudianteConId.toJson(),
+        'fecha_creacion': FieldValue.serverTimestamp(),
+      });
 
-      // 5. Agregar credenciales en subcolección "credenciales/login"
-      await estudianteRef
-          .collection('credenciales')
-          .doc('login')
-          .set(credenciales.toJson());
+      await estudianteRef.collection('representante').doc().set({
+        ...representante.toJson(),
+        'fecha_creacion': FieldValue.serverTimestamp(),
+      });
 
-      print("✅ Estudiante, representante y credenciales guardados.");
+      await estudianteRef.collection('credenciales').doc('login').set({
+        ...credenciales.toJson(),
+        'fecha_creacion': FieldValue.serverTimestamp(),
+      });
+
+      print("✅ Usuario creado y datos guardados correctamente.");
     } catch (e) {
       print("❌ Error al guardar en Firestore: $e");
       rethrow;
     }
   }
 
+  /// ✅ Nuevo método: solo guarda en Firestore usando un UID ya existente
+  Future<void> guardarEstudianteConUid({
+    required String uid,
+    required Estudiante estudiante,
+    required Representante representante,
+    required Credenciales credenciales,
+  }) async {
+    try {
+      final estudianteRef = _firestore.collection('estudiantes').doc(uid);
+      final estudianteConId = estudiante.copyWith(id: uid);
+
+      await estudianteRef.set({
+        ...estudianteConId.toJson(),
+        'fecha_creacion': FieldValue.serverTimestamp(),
+      });
+
+      await estudianteRef.collection('representante').doc().set({
+        ...representante.toJson(),
+        'fecha_creacion': FieldValue.serverTimestamp(),
+      });
+
+      await estudianteRef.collection('credenciales').doc('login').set({
+        ...credenciales.toJson(),
+        'fecha_creacion': FieldValue.serverTimestamp(),
+      });
+
+      print("✅ Datos guardados correctamente para UID existente.");
+    } catch (e) {
+      print("❌ Error al guardar con UID existente: $e");
+      rethrow;
+    }
+  }
 }

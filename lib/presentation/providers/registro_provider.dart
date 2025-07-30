@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:apis/domain/entities/estudiante.dart';
 import 'package:apis/domain/entities/representante.dart';
 import 'package:apis/domain/entities/credenciales.dart';
@@ -21,28 +23,24 @@ class RegistroProvider extends ChangeNotifier {
   Map<String, dynamic> get datosRepresentante => _datosRepresentante;
   Map<String, dynamic> get datosCredenciales => _datosCredenciales;
 
-  // === Actualizar datos de estudiante ===
   void actualizarDatosEstudiante(Map<String, dynamic> nuevosDatos) {
     _datosEstudiante.addAll(nuevosDatos);
     notifyListeners();
   }
 
-  // === Actualizar datos de representante ===
   void actualizarDatosRepresentante(Map<String, dynamic> nuevosDatos) {
     _datosRepresentante.addAll(nuevosDatos);
     notifyListeners();
   }
 
-  // === Actualizar datos de credenciales ===
   void actualizarCredenciales(Map<String, dynamic> nuevosDatos) {
     _datosCredenciales.addAll(nuevosDatos);
     notifyListeners();
   }
 
-  // === Construir objetos completos ===
   Estudiante construirEstudiante() {
     return Estudiante(
-      id: null, // se asigna luego en Firestore
+      id: null,
       tipoIdentificacion: _datosEstudiante['tipoIdentificacion'],
       numIdentificacion: _datosEstudiante['numIdentificacion'],
       nombre: _datosEstudiante['nombre'],
@@ -86,7 +84,6 @@ class RegistroProvider extends ChangeNotifier {
     );
   }
 
-  // === Guardar todo al backend ===
   Future<void> guardarTodo({
     required VoidCallback onSuccess,
     required Function(String) onError,
@@ -99,23 +96,61 @@ class RegistroProvider extends ChangeNotifier {
       final representante = construirRepresentante();
       final credenciales = construirCredenciales();
 
-      await _guardarRegistroUseCase.execute(
-        estudiante: estudiante,
+      print('👤 Estudiante: ${estudiante.toJson()}');
+      print('👨‍👩‍👧 Representante: ${representante.toJson()}');
+      print('🔐 Credenciales: ${credenciales.toJson()}');
+
+      final usuarioPlano = credenciales.usuario.trim();
+      final correoParaAuth = '$usuarioPlano@fineapp.com';
+
+      // 👉 Paso 1: Crear usuario en Firebase Auth
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: correoParaAuth,
+        password: credenciales.contrasena,
+      );
+
+      final uid = credential.user?.uid;
+      if (uid == null) throw Exception('No se pudo obtener el UID');
+
+      // 👉 Paso 2: Guardar en Firestore usando el UID
+      await _guardarRegistroUseCase.executeConUid(
+        uid: uid,
+        estudiante: estudiante.copyWith(id: uid),
         representante: representante,
-        credenciales: credenciales,
+        credenciales: Credenciales(
+          usuario: usuarioPlano,
+          contrasena: credenciales.contrasena,
+        ),
       );
 
       _cargando = false;
       notifyListeners();
       onSuccess();
-    } catch (e) {
+    } catch (e, stacktrace) {
+      print('🛑 Error al registrar: $e');
+      print('📍 Stacktrace: $stacktrace');
+
+      // 🔁 Rollback seguro
+      try {
+        final auth = FirebaseAuth.instance;
+        final user = auth.currentUser;
+
+        if (user != null && user.uid.isNotEmpty) {
+          await user.delete();
+          print('🧹 Usuario Auth eliminado por error posterior');
+        } else {
+          print('⚠️ No se pudo eliminar usuario: user es null o sin UID');
+        }
+      } catch (deleteError) {
+        print('⚠️ Error seguro al intentar eliminar usuario Auth: $deleteError');
+      }
+
       _cargando = false;
       notifyListeners();
-      onError(e.toString());
+      onError('Ocurrió un error al registrar. Inténtalo nuevamente.');
     }
   }
 
-  // === Limpiar todos los datos temporales ===
   void limpiarTodo() {
     _datosEstudiante.clear();
     _datosRepresentante.clear();

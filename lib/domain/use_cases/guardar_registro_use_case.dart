@@ -1,6 +1,6 @@
-import 'package:apis/domain/entities/credenciales.dart';
 import 'package:apis/domain/entities/estudiante.dart';
 import 'package:apis/domain/entities/representante.dart';
+import 'package:apis/domain/entities/credenciales.dart';
 import 'package:apis/infrastructure/firestore/firebase_service.dart';
 
 class GuardarRegistroUseCase {
@@ -14,6 +14,20 @@ class GuardarRegistroUseCase {
     required Credenciales credenciales,
   }) async {
     await _firebaseService.guardarEstudianteConTodo(
+      estudiante: estudiante,
+      representante: representante,
+      credenciales: credenciales,
+    );
+  }
+
+  Future<void> executeConUid({
+    required String uid,
+    required Estudiante estudiante,
+    required Representante representante,
+    required Credenciales credenciales,
+  }) async {
+    await _firebaseService.guardarEstudianteConUid(
+      uid: uid,
       estudiante: estudiante,
       representante: representante,
       credenciales: credenciales,

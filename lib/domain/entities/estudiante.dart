@@ -59,12 +59,33 @@ class Estudiante {
       'fecha_creacion': FieldValue.serverTimestamp(),
     };
 
-    // Solo añade 'telefono' si no es null ni vacío
     if (telefono != null && telefono!.trim().isNotEmpty) {
       data['telefono'] = telefono!;
     }
 
     return data;
+  }
+
+  factory Estudiante.fromJson(Map<String, dynamic> json) {
+    return Estudiante(
+      id: json['id'], // opcional
+      tipoIdentificacion: json['tipoIdentificacion'] ?? '',
+      numIdentificacion: json['numIdentificacion'] ?? '',
+      nombre: json['nombre'] ?? '',
+      apellido: json['apellido'] ?? '',
+      fechaNacimiento: (json['fechaNacimiento'] as Timestamp).toDate(),
+      genero: json['genero'] ?? '',
+      ocupacion: json['ocupacion'] ?? '',
+      nivelEducacion: json['nivelEducacion'] ?? '',
+      lugarEstudioTrabajo: json['lugarEstudioTrabajo'] ?? '',
+      direccion: json['direccion'] ?? '',
+      correo: json['correo'] ?? '',
+      celular: json['celular'] ?? '',
+      telefono: json['telefono'],
+      establecimiento: json['establecimiento'] ?? '',
+      programaAcademico: json['programaAcademico'] ?? '',
+      esRepresentante: json['esRepresentante'] ?? false,
+    );
   }
 
   Estudiante copyWith({
@@ -84,6 +105,7 @@ class Estudiante {
     String? telefono,
     String? establecimiento,
     String? programaAcademico,
+    bool? esRepresentante, // <-- ¡AQUÍ!
   }) {
     return Estudiante(
       id: id ?? this.id,
@@ -102,6 +124,7 @@ class Estudiante {
       telefono: telefono ?? this.telefono,
       establecimiento: establecimiento ?? this.establecimiento,
       programaAcademico: programaAcademico ?? this.programaAcademico,
+      esRepresentante: esRepresentante ?? this.esRepresentante, // <-- ¡Y AQUÍ!
     );
   }
 

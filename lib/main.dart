@@ -7,6 +7,7 @@ import 'package:apis/presentation/screens/login.dart';
 import 'package:apis/infrastructure/firestore/firebase_service.dart';
 import 'package:apis/domain/use_cases/guardar_registro_use_case.dart';
 import 'package:apis/presentation/providers/registro_provider.dart';
+import 'package:apis/presentation/providers/estudiante_provider.dart'; // 👈 AÑADIDO
 import 'package:apis/config/router/app_routes.dart';
 
 void main() async {
@@ -28,6 +29,9 @@ class MyApp extends StatelessWidget {
           create: (_) => RegistroProvider(
             GuardarRegistroUseCase(FirebaseService()),
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => EstudianteProvider(), // 👈 AÑADIDO
         ),
       ],
       child: MaterialApp(

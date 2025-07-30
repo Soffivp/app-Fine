@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
 import 'package:apis/presentation/widgets/campo_estandar.dart';
 import 'package:apis/presentation/widgets/boton_formulario.dart';
 import 'package:apis/presentation/screens/home_F.dart';
 import 'package:apis/presentation/screens/datosPers_Estudiantes.dart';
+import 'package:apis/presentation/providers/estudiante_provider.dart';
+import 'package:apis/domain/entities/estudiante.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -30,48 +33,55 @@ class _LoginState extends State<Login> {
 
   Future<void> _iniciarSesion() async {
     if (_formKey.currentState!.validate()) {
-      final usuarioIngresado = _usuarioController.text.trim();
-      final contrasenaIngresada = _contrasenaController.text.trim();
+      final usuario = _usuarioController.text.trim();
+      final email = '$usuario@fineapp.com'; // 👈 Convertimos el usuario en correo válido
+      final password = _contrasenaController.text.trim();
 
       try {
-        final estudiantesSnapshot =
-        await FirebaseFirestore.instance.collection('estudiantes').get();
-        bool credencialValida = false;
+        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
 
-        for (var estudiante in estudiantesSnapshot.docs) {
-          final credencialesSnapshot =
-          await estudiante.reference.collection('credenciales').get();
+        final uid = credential.user?.uid;
+        if (uid == null) throw Exception("No se pudo obtener el UID del usuario");
 
-          for (var credencial in credencialesSnapshot.docs) {
-            final data = credencial.data();
-            if (data['usuario'] == usuarioIngresado &&
-                data['contrasena'] == contrasenaIngresada) {
-              credencialValida = true;
-              break;
-            }
-          }
+        final doc = await FirebaseFirestore.instance
+            .collection('estudiantes')
+            .doc(uid)
+            .get();
 
-          if (credencialValida) break;
+        if (!doc.exists) {
+          throw Exception("Estudiante no encontrado en la base de datos");
         }
 
-        if (credencialValida) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Inicio de sesión exitoso')),
-          );
+        final datosEstudiante = doc.data()!;
+        datosEstudiante['id'] = doc.id;
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => HomeScreen()),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Usuario o contraseña incorrectos')),
-          );
-        }
-      } catch (e) {
-        print('Error al verificar credenciales: $e');
+        final estudiante = Estudiante.fromJson(datosEstudiante);
+        final estudianteProvider = context.read<EstudianteProvider>();
+        estudianteProvider.setEstudiante(estudiante);
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al conectar con la base de datos')),
+          const SnackBar(content: Text('Inicio de sesión exitoso')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } on FirebaseAuthException catch (e) {
+        String mensaje = "Error al iniciar sesión";
+        if (e.code == 'user-not-found') mensaje = "Usuario no registrado";
+        if (e.code == 'wrong-password') mensaje = "Contraseña incorrecta";
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mensaje)),
+        );
+      } catch (e) {
+        print("❌ Error general en login: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Ocurrió un error al iniciar sesión")),
         );
       }
     }
@@ -126,9 +136,7 @@ class _LoginState extends State<Login> {
                         obscureText: !_mostrarContrasena,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _mostrarContrasena
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            _mostrarContrasena ? Icons.visibility : Icons.visibility_off,
                             color: Colors.pink,
                           ),
                           onPressed: () {
@@ -162,7 +170,7 @@ class _LoginState extends State<Login> {
                           const Spacer(),
                           TextButton(
                             onPressed: () {
-                              // Aquí puedes implementar la lógica de recuperar contraseña
+                              // lógica para recuperar contraseña
                             },
                             child: const Text(
                               'Olvidé mi contraseña »',
